@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: gateway-service
+  config:
+    # 必须成功读取远程配置才能启动，避免配置不可用时悄悄退回本地路由。
+    import: nacos:gateway-service.yml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        file-extension: yml
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+
+mall:
+  auth:
+    # 总时限覆盖服务发现、连接及响应体读取；失败明确返回503。
+    timeout-ms: ${GATEWAY_AUTH_TIMEOUT_MS:5000}
