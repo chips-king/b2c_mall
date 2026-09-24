@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!-- 沿用课堂节点顺序；串行执行才能共享同一次Spring事务。 -->
+    <chain name="payChain">
+        THEN(priceCheck, stockCheck, SWITCH(payswitch).to(alipay, wechat), orderStatus);
+    </chain>
+</flow>
