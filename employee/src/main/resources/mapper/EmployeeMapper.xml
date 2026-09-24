@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.b2cmall.employee.dao.mapper.EmployeeMapper">
+    <resultMap id="employee" type="com.b2cmall.employee.dao.po.EmployeePO">
+        <id column="id" property="id"/>
+        <result column="shop_id" property="shopId"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="login_count" property="loginCount"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_employee (shop_id, username, password, avatar_url)
+        VALUES (#{shopId}, #{username}, #{password}, #{avatarUrl})
+        ON CONFLICT(shop_id, username) DO NOTHING
+    </insert>
+    <select id="getEmployee" resultMap="employee">
+        SELECT id, shop_id, username, password, avatar_url, last_login_time,
+               login_count, status, created_at, updated_at
+        FROM tb_employee WHERE shop_id = #{shopId} AND username = #{username}
+    </select>
+    <select id="findById" resultMap="employee">
+        SELECT * FROM tb_employee WHERE id = #{userId} AND shop_id = #{shopId}
+    </select>
+    <!-- 避免校验密码后账号被禁用或密码被修改的竞争；统计与成功审计在同一事务中提交。 -->
+    <update id="recordSuccessfulLogin">
+        UPDATE tb_employee SET login_count = login_count + 1,
+            last_login_time = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        WHERE id = #{userId} AND shop_id = #{shopId} AND status = 1 AND password = #{expectedHash}
+    </update>
+    <update id="fillDefaultAvatars">
+        UPDATE tb_employee SET avatar_url = #{avatar} WHERE avatar_url IS NULL OR trim(avatar_url) = ''
+    </update>
+</mapper>
