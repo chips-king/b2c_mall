@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.b2cmall.shop.dao.mapper.MessageMapper">
+    <insert id="saveMessage" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_messages (shop_id, title, content, msg_type, is_read)
+        VALUES (#{shopId}, #{title}, #{content}, #{msgType}, #{isRead})
+        ON CONFLICT(shop_id) WHERE msg_type = 1 DO NOTHING
+    </insert>
+    <select id="findWelcomeId" resultType="long">
+        SELECT id FROM tb_messages WHERE shop_id = #{shopId} AND msg_type = 1
+    </select>
+</mapper>
