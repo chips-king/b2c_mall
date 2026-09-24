@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: employee-service
+  config:
+    import: nacos:employee-service.yml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        file-extension: yml
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT:6379}
+    database: ${REDIS_DATABASE:0}
+    username: ${REDIS_USERNAME:}
+    password: ${REDIS_PASSWORD:}
+    timeout: ${REDIS_TIMEOUT:3s}
+    connect-timeout: ${REDIS_CONNECT_TIMEOUT:3s}
+  datasource:
+    # 显式指定当前数据库，避免意外在工程根目录重新创建历史库。
+    url: jdbc:sqlite:${EMPLOYEE_DB_PATH}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      continue-on-error: false
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+mall:
+  # 与 Shop 使用同一个进程环境变量值；缺失或空值必须阻止内部接口启用。
+  internal-service-token: ${INTERNAL_SERVICE_TOKEN}
+
+  auth:
+    jwt-secret-base64: ${JWT_SECRET_BASE64}
+    token-ttl-seconds: ${JWT_TTL_SECONDS:7200}
+    redis-key-prefix: ${REDIS_KEY_PREFIX:b2c_mall:ZhangHaijin:}
+    default-avatar: /employee/images/default-avatar.svg
