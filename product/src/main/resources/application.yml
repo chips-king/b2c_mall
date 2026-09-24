@@ -1,0 +1,45 @@
+spring:
+  jackson:
+    deserialization:
+      accept-float-as-int: false
+  application:
+    name: product-service
+  config:
+    # 连接信息在本地确定；端口等远程配置由同一命名空间的 Data ID 导入。
+    import: nacos:product-service.yml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        file-extension: yml
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+  datasource:
+    # 相对路径以启动进程的工作目录为准，课堂默认从工程根目录启动。
+    url: jdbc:sqlite:${PRODUCT_DB_PATH:./mall_product.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+      connection-init-sql: PRAGMA foreign_keys=ON
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      continue-on-error: false
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+feign:
+  client:
+    config:
+      employee-service:
+        connectTimeout: ${EMPLOYEE_CONNECT_TIMEOUT_MS:3000}
+        readTimeout: ${EMPLOYEE_READ_TIMEOUT_MS:5000}
+        loggerLevel: none
