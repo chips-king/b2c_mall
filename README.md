@@ -15,9 +15,6 @@ Maven 多模块商城教学工程，基础包名 `com.b2cmall`。
 | product | 两种商品模板、创建与查询、上架及商品日志 | 8082 |
 | order | 商品成交快照、LiteFlow支付、失败重试、签名回调、订单状态机 | 8083 |
 
-依赖参考项目提交 `9f56decb785d351c6df89ab454ad5384530d4a11`：
-https://gitee.com/liuxinsi/b2c_mall_demo
-
 Spring Statemachine 3.2.1、LiteFlow 2.11.4.2、Guava EventBus 30.1、Hutool JWT 5.8.35。
 
 Java 17、Maven 3.9.8；Spring Boot 2.7.18、Spring Cloud 2021.0.5、MyBatis Starter 2.3.2、SQLite JDBC 3.42.0.0。父 POM 统一管理版本，并通过 Boot BOM 对齐基础依赖。
@@ -279,5 +276,3 @@ Spring Statemachine控制 `WAIT_PAY --PAY--> PAID --SENT--> SENT --COMPLETED--> 
 - 同店铺另一员工在查询、支付、回调、发货和完成入口均返回404。
 - 真实接口完成WAIT_PAY→PAID→SENT→COMPLETED；在PAY、SENT、COMPLETED各次状态日志写入注入故障，HTTP 500后状态回滚，恢复后可以继续。
 - 另一订单通过支付宝成功回调到PAID。最终2家店铺完成初始化、3名员工（含隔离验证员工）、2件商品、2个订单；支付记录为FAILED 1条、SUCCESS 2条。
-
-本次五个服务进程均已停止，测试账号完成退出，测试Redis会话键清理完成。本轮联调时原工程根目录的数据库前后SHA-256一致；随后按用户要求清理了这两个历史库。
