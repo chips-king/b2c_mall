@@ -2,7 +2,7 @@
 
 Maven 多模块商城教学工程，基础包名 `com.b2cmall`。
 
-逐文件用途见 [文件说明](FILE_GUIDE.md)，方便按模块检查课堂实现。
+逐文件用途见 [文件说明](FILE_GUIDE.md)。
 
 ## 基础工程
 
@@ -15,7 +15,7 @@ Maven 多模块商城教学工程，基础包名 `com.b2cmall`。
 | product | 两种商品模板、创建与查询、上架及商品日志 | 8082 |
 | order | 商品成交快照、LiteFlow支付、失败重试、签名回调、订单状态机 | 8083 |
 
-依赖参考老师仓库提交 `9f56decb785d351c6df89ab454ad5384530d4a11`：
+依赖参考项目提交 `9f56decb785d351c6df89ab454ad5384530d4a11`：
 https://gitee.com/liuxinsi/b2c_mall_demo
 
 Spring Statemachine 3.2.1、LiteFlow 2.11.4.2、Guava EventBus 30.1、Hutool JWT 5.8.35。
