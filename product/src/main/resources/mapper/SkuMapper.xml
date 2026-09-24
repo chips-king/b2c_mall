@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.b2cmall.product.dao.mapper.SkuMapper">
+    <resultMap id="sku" type="com.b2cmall.product.dao.po.SkuPO">
+        <id column="id" property="id"/>
+        <result column="shop_id" property="shopId"/>
+        <result column="cate_name" property="cateName"/>
+        <result column="sku_name" property="skuName"/>
+        <result column="sell_point" property="sellPoint"/>
+        <result column="stock" property="stock"/>
+        <result column="price" property="price"/>
+        <result column="status" property="status"/>
+        <result column="type" property="type"/>
+        <result column="created_user_id" property="createdUserId"/>
+        <result column="update_user_id" property="updateUserId"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_sku (shop_id, cate_name, sku_name, sell_point, stock, price, status, type, created_user_id, update_user_id)
+        VALUES (#{shopId}, #{cateName}, #{skuName}, #{sellPoint}, #{stock}, #{price}, #{status}, #{type}, #{createdUserId}, #{updateUserId})
+    </insert>
+    <update id="putOnSale">
+        UPDATE tb_sku SET status = 1, update_user_id = #{userId}, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        WHERE id = #{id} AND shop_id = #{shopId} AND status = 0 AND stock > 0 AND price > 0
+    </update>
+    <select id="findById" resultMap="sku">
+        SELECT * FROM tb_sku WHERE id = #{id} AND shop_id = #{shopId}
+    </select>
+</mapper>
