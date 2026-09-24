@@ -1,0 +1,14 @@
+**/target/
+*.log
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.idea/
+*.iml
+.env
+
+# 公开教学仓库仅上传主源码；本地测试文件保留。
+**/src/test/
+/requests/
+.env.*
