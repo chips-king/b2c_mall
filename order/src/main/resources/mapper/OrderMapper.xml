@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.b2cmall.order.dao.mapper.OrderMapper">
+    <resultMap id="order" type="com.b2cmall.order.dao.po.OrderPO">
+        <id column="id" property="id"/>
+        <result column="shop_id" property="shopId"/>
+        <result column="status" property="status"/>
+        <result column="sku_total" property="skuTotal"/>
+        <result column="sku_total_price" property="skuTotalPrice"/>
+        <result column="created_user_id" property="createdUserId"/>
+        <result column="update_user_id" property="updateUserId"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_order (shop_id, status, sku_total, sku_total_price, created_user_id, update_user_id)
+        VALUES (#{shopId}, #{status}, #{skuTotal}, #{skuTotalPrice}, #{createdUserId}, #{updateUserId})
+    </insert>
+    <select id="findById" resultMap="order">
+        SELECT * FROM tb_order WHERE id = #{id} AND shop_id = #{shopId}
+    </select>
+    <!-- 先取得SQLite写锁再读，串行处理同一库写入；不会伪造订单状态或更新确认时间。 -->
+    <update id="lockForPayment">
+        UPDATE tb_order SET id=id WHERE id=#{id} AND shop_id=#{shopId} AND created_user_id=#{userId} AND status='WAIT_PAY'
+    </update>
+    <update id="lockForTransition">
+        UPDATE tb_order SET id=id WHERE id=#{id} AND shop_id=#{shopId} AND created_user_id=#{userId} AND status!='COMPLETED'
+    </update>
+    <update id="transition">
+        UPDATE tb_order SET status=#{after},update_user_id=#{userId},updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=#{id} AND shop_id=#{shopId} AND created_user_id=#{userId} AND status=#{before}
+    </update>
+</mapper>
