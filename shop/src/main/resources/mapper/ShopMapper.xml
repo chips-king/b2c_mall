@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.b2cmall.shop.dao.mapper.ShopMapper">
+    <resultMap id="shop" type="com.b2cmall.shop.dao.po.ShopPO">
+        <id column="id" property="id"/>
+        <result column="shop_name" property="shopName"/>
+        <result column="admin_account" property="adminAccount"/>
+        <result column="admin_password" property="adminPassword"/>
+        <result column="logo_url" property="logoUrl"/>
+        <result column="status" property="status"/>
+        <result column="init_status" property="initStatus"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    <select id="findByName" resultMap="shop">SELECT * FROM tb_shop WHERE shop_name = #{shopName}</select>
+    <update id="markEmployeeInitialized">
+        UPDATE tb_shop_initialization_task SET employee_initialized = 1 WHERE shop_id = #{id} AND attempt = #{attempt}
+    </update>
+    <select id="welcomeCount" resultType="int">SELECT COUNT(*) FROM tb_messages WHERE shop_id = #{id} AND msg_type = 1</select>
+    <!-- 唯一约束处理并发竞争：仅店名冲突返回零行，其他 SQL 错误继续抛出。 -->
+    <insert id="registerShop" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_shop (shop_name, admin_account, admin_password)
+        VALUES (#{shopName}, #{adminAccount}, #{adminPassword})
+        ON CONFLICT(shop_name) DO NOTHING
+    </insert>
+    <select id="findById" resultMap="shop">
+        SELECT * FROM tb_shop WHERE id = #{id}
+    </select>
+    <resultMap id="initializationTask" type="com.b2cmall.shop.dao.po.ShopInitializationTaskPO">
+        <id column="shop_id" property="shopId"/>
+        <result column="attempt" property="attempt"/>
+        <result column="deadline_epoch_ms" property="deadlineEpochMs"/>
+        <result column="init_status" property="initStatus"/>
+        <result column="employee_initialized" property="employeeInitialized"/>
+        <result column="failure_code" property="failureCode"/>
+    </resultMap>
+    <insert id="createInitializationTask">
+        INSERT INTO tb_shop_initialization_task (shop_id, deadline_epoch_ms) VALUES (#{id}, #{deadline})
+    </insert>
+    <select id="findInitializationTask" resultMap="initializationTask">
+        SELECT task.*, shop.init_status FROM tb_shop_initialization_task task
+        JOIN tb_shop shop ON shop.id = task.shop_id WHERE task.shop_id = #{id}
+    </select>
+    <!-- 领取与店铺状态变更在同一事务中；并发重试仅一方能推进执行编号。 -->
+    <update id="advanceInitializationTask">
+        UPDATE tb_shop_initialization_task SET attempt = attempt + 1,
+            deadline_epoch_ms = #{deadline}, failure_code = NULL
+        WHERE shop_id = #{id} AND attempt = #{attempt}
+    </update>
+    <update id="changeInitializationStatus">
+        UPDATE tb_shop SET init_status = #{status}, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        WHERE id = #{id} AND init_status = #{expected}
+    </update>
+    <!-- 终态与执行编号同时校验；超时的旧任务不能覆盖重试后的新状态。 -->
+    <update id="finishInitialization">
+        UPDATE tb_shop SET init_status = #{initStatus},
+            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        WHERE id = #{id} AND init_status = 'PENDING'
+            AND EXISTS (SELECT 1 FROM tb_shop_initialization_task task
+                        WHERE task.shop_id = #{id} AND task.attempt = #{attempt})
+    </update>
+    <update id="recordInitializationFailure">
+        UPDATE tb_shop_initialization_task SET failure_code = #{failureCode}
+        WHERE shop_id = #{id} AND attempt = #{attempt}
+    </update>
+    <select id="findExpiredInitializationTasks" resultMap="initializationTask">
+        SELECT task.*, shop.init_status FROM tb_shop_initialization_task task
+        JOIN tb_shop shop ON shop.id = task.shop_id
+        WHERE shop.init_status = 'PENDING' AND task.deadline_epoch_ms &lt;= #{now}
+        ORDER BY task.deadline_epoch_ms LIMIT 100
+    </select>
+</mapper>
